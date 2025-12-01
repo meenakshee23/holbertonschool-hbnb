@@ -1,19 +1,23 @@
-class Place(BaseModel):
-    def __init__(self, title, description, price, latitude, longitude, owner):
+#!/usr/bin/python3
+from app.models.base_model import BaseModel
+
+class User(BaseModel):
+    """User model"""
+    def __init__(self, first_name, last_name, email, is_admin=False):
         super().__init__()
-        self.title = title
-        self.description = description
-        self.price = price
-        self.latitude = latitude
-        self.longitude = longitude
-        self.owner = owner
-        self.reviews = []  # List to store related reviews
-        self.amenities = []  # List to store related amenities
 
-    def add_review(self, review):
-        """Add a review to the place."""
-        self.reviews.append(review)
+        # Validations
+        if not first_name or len(first_name) > 50:
+            raise ValueError("first_name is required and must be <= 50 characters")
 
-    def add_amenity(self, amenity):
-        """Add an amenity to the place."""
-        self.amenities.append(amenity)
+        if not last_name or len(last_name) > 50:
+            raise ValueError("last_name is required and must be <= 50 characters")
+
+        if not email or "@" not in email:
+            raise ValueError("A valid email is required")
+
+        # Assign attributes
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.is_admin = is_admin
