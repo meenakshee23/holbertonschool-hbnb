@@ -3,7 +3,7 @@ HBnB part 2
 Create the Project Directory Structure:
 
 project should be organized into the following structure:
-
+```
 hbnb/
 ├── app/
 │   ├── __init__.py
@@ -31,7 +31,7 @@ hbnb/
 ├── config.py
 ├── requirements.txt
 ├── README.md
-
+```
 
 
 
