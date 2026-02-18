@@ -10,14 +10,15 @@ This phase focuses on building:
 The goal is to turn the design from Part 1 into working code by creating the project structure and implementing features to manage users, places, reviews, and amenities.
 
 
-Install Required Packages
+**Install Required Packages**
 
-In the requirements.txt file, list the Python packages needed for the project:
-``
+In the `requirements.txt` file, list the Python packages needed for the project:
+
+```text
 flask
-flask-restx 
-``
+flask-restx
+```
 
 Install the dependencies using:
 
-`` pip install -r requirements.txt ``
+``` pip install -r requirements.txt ```
