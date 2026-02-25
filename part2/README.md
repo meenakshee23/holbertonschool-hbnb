@@ -24,3 +24,7 @@ Install the dependencies using:
 ```bash
  pip install -r requirements.txt 
  ```
+
+
+## Business Logic Layer:
+ Building the core models and logic that drive the application's functionality. This includes defining relationships, handling data validation, and managing interactions between different components.
