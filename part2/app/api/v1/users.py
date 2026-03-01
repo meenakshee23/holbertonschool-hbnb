@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 
@@ -27,12 +29,11 @@ class UserList(Resource):
 
         new_user = facade.create_user(user_data)
         return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
-
-@api.response(200, 'List of users retrieved successfully')
-def get(self):
-    """Retrieve list of all users"""
-    users = facade.get_all_users()
-    return [{'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email} for user in users], 200
+    @api.response(200, 'List of users retrieved successfully')
+    def get(self):
+        """Retrieve list of all users"""
+        users = facade.get_all_users()
+        return [{'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email} for user in users], 200
     
 @api.route('/<user_id>')
 class UserResource(Resource):
@@ -43,4 +44,21 @@ class UserResource(Resource):
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
+        return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
+    
+    @api.expect(user_model, validate=True)
+    @api.response(200, 'User successfully updated')
+    @api.response(404, 'User not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, user_id):
+        """Update a user by ID"""
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
+
+        data = api.payload
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.email = data.get('email', user.email)
+
         return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
