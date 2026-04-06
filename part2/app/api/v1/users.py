@@ -2,6 +2,7 @@
 
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required, get_jwt
 
 api = Namespace('users', description='User operations')
 
@@ -19,9 +20,15 @@ class UserList(Resource):
     @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(400, 'Invalid input data')
-    def post(self):
+    @jwt_required()
+    def post(self, user_id):
         """Register a new user"""
         user_data = api.payload
+        current_user = get_jwt()
+        
+        # If 'is_admin' is part of the identity payload
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
 
         # Simulate email uniqueness check (to be replaced by real validation with persistence)
         existing_user = facade.get_user_by_email(user_data['email'])
