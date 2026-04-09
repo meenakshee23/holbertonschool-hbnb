@@ -3,7 +3,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 from flask_jwt_extended import jwt_required, get_jwt
-from flask import requests
+from flask import request
 
 api = Namespace('users', description='User operations')
 
@@ -31,9 +31,19 @@ class UserList(Resource):
         if not current_user.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
         
-
+        email = user_data.get('email')
+        if facade.get_user_by_email(email):
+            return {'error': 'Email already registered'}, 400
+        
         new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
+
+        return {
+            'id': new_user.id,
+            'first_name': new_user.first_name,
+            'last_name': new_user.last_name,
+            'email': new_user.email
+        }, 201
+
     @api.response(200, 'List of users retrieved successfully')
     def get(self):
         """Retrieve list of all users"""
@@ -56,13 +66,30 @@ class UserResource(Resource):
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, user_id):
         """Update a user by ID"""
+        
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+    
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
 
         data = api.payload
+        
+        email = data.get('email')
+        if email:
+            existing = facade.get_user_by_email(email)
+            if existing and existing.id != user_id:
+                return {'error': 'Email already in use'}, 400
+            
+            password = data.get('password')
+            if password:
+                user.password = facade.hash_password(password)
+
         user.first_name = data.get('first_name', user.first_name)
         user.last_name = data.get('last_name', user.last_name)
         user.email = data.get('email', user.email)

@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required, get_jwt
+from flask import request
 
 api = Namespace('amenities', description='Amenity operations')
 
@@ -13,16 +15,27 @@ class AmenityList(Resource):
     @api.expect(amenity_model)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def post(self):
         """Register a new amenity"""
-        # Placeholder for the logic to register a new amenity
-        pass
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+        
+        data = api.payload
+
+        name = data.get('name')
+        if not name:
+            return {'error': 'Name is required'}, 400
+
+        amenity = facade.create_amenity(data)
+        return {'id': amenity.id, 'name': amenity.name}, 201
 
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
-        # Placeholder for logic to return a list of all amenities
-        pass
+        amenities = facade.get_all_amenities()
+        return [{'id': a.id, 'name': a.name} for a in amenities], 200
 
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
@@ -30,14 +43,33 @@ class AmenityResource(Resource):
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
         """Get amenity details by ID"""
-        # Placeholder for the logic to retrieve an amenity by ID
-        pass
+        amenity = facade.get_amenity(amenity_id)
+        if not amenity:
+            return {'error': 'Amenity not found'}, 404
+        return {'id': amenity.id, 'name': amenity.name}, 200
 
     @api.expect(amenity_model)
     @api.response(200, 'Amenity updated successfully')
     @api.response(404, 'Amenity not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, amenity_id):
         """Update an amenity's information"""
-        # Placeholder for the logic to update an amenity by ID
-        pass
+        current_user = get_jwt()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
+        
+        amenity = facade.get_amenity(amenity_id)
+        if not amenity:
+            return {'error': 'Amenity not found'}, 404
+
+        data = api.payload
+
+        name = data.get('name')
+        if not name:
+            return {'error': 'Name is required'}, 400
+        
+        amenity.name = name
+
+        return {'id': amenity.id, 'name': amenity.name}, 200
+
