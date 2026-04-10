@@ -72,4 +72,3 @@ class AmenityResource(Resource):
         amenity.name = name
 
         return {'id': amenity.id, 'name': amenity.name}, 200
-
